@@ -1,0 +1,448 @@
+From 0062119319e17d201ccfee16293698163ec32332 Mon Sep 17 00:00:00 2001
+From: favas <favas@local>
+Date: Tue, 7 Apr 2026 12:22:43 +0100
+Subject: [PATCH] telephony: bridge Samsung radio 1.2 callbacks
+
+Change-Id: If09b360eb8d581982ec359b942eb8c7cf40d3c26
+---
+ Android.mk                                    |   1 +
+ .../internal/telephony/RadioIndication.java   |  71 ++++-
+ .../internal/telephony/RadioResponse.java     | 296 +++++++++++++++++-
+ 3 files changed, 364 insertions(+), 4 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 054128188..b549ef409 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -30,6 +30,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
+     android.hardware.radio-V1.0-java \
+     android.hardware.radio-V1.1-java \
+     android.hardware.radio-V1.2-java \
++    vendor.samsung.hardware.radio-V1.2-java \
+     android.hardware.radio.config-V1.0-java \
+     android.hardware.radio.deprecated-V1.0-java \
+     android.hidl.base-V1.0-java \
+diff --git a/src/java/com/android/internal/telephony/RadioIndication.java b/src/java/com/android/internal/telephony/RadioIndication.java
+index b3fd47216..78ed3a633 100644
+--- a/src/java/com/android/internal/telephony/RadioIndication.java
++++ b/src/java/com/android/internal/telephony/RadioIndication.java
+@@ -83,7 +83,6 @@ import android.hardware.radio.V1_0.SsInfoData;
+ import android.hardware.radio.V1_0.StkCcUnsolSsResult;
+ import android.hardware.radio.V1_0.SuppSvcNotification;
+ import android.hardware.radio.V1_2.CellConnectionStatus;
+-import android.hardware.radio.V1_2.IRadioIndication;
+ import android.os.AsyncResult;
+ import android.os.SystemProperties;
+ import android.telephony.CellInfo;
+@@ -105,7 +104,7 @@ import com.android.internal.telephony.uicc.IccUtils;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+-public class RadioIndication extends IRadioIndication.Stub {
++public class RadioIndication extends vendor.samsung.hardware.radio.V1_2.IRadioIndication.Stub {
+     RIL mRil;
+ 
+     public RadioIndication(RIL ril) {
+@@ -904,6 +903,74 @@ public class RadioIndication extends IRadioIndication.Stub {
+         mRil.mNattKeepaliveStatusRegistrants.notifyRegistrants(new AsyncResult(null, ks, null));
+     }
+ 
++    public void secCurrentSignalStrength(int indicationType,
++            vendor.samsung.hardware.radio.V1_2.SecSignalStrength signalStrength) {
++        currentSignalStrength_1_2(indicationType, signalStrength.base);
++    }
++
++    public void secImsNetworkStateChanged(int indicationType, ArrayList<Integer> regState) {
++        imsNetworkStateChanged(indicationType);
++    }
++
++    public void oemAcbInfoChanged(int indicationType, ArrayList<Integer> acbInfo) {}
++
++    public void oemCsFallback(int indicationType, int state) {}
++
++    public void oemImsPreferenceChangeInd(int indicationType, ArrayList<Integer> imsPref) {}
++
++    public void oemVoiceRadioBearerHoStatusInd(int indicationType, int state) {}
++
++    public void oemHysteresisDcnInd(int indicationType) {}
++
++    public void oemTimerStatusChangedInd(int indicationType, ArrayList<Integer> eventNoti) {}
++
++    public void oemModemCapInd(int indicationType, ArrayList<Byte> data) {}
++
++    public void oemAmInd(int indicationType, String intent) {}
++
++    public void oemTrunRadioOnInd(int indicationType) {}
++
++    public void oemSimPbReadyInd(int indicationType) {}
++
++    public void oemPbInitCompleteInd(int indicationType) {}
++
++    public void oemDeviceReadyNoti(int indicationType) {}
++
++    public void oemStkSmsSendResultInd(int indicationType, int result) {}
++
++    public void oemStkCallControlResultInd(int indicationType, String cmd) {}
++
++    public void oemSimSwapStateChangedInd(int indicationType, int state) {}
++
++    public void oemSimCountMismatchedInd(int indicationType, int state) {}
++
++    public void oemSimIccidNoti(int indicationType, String iccid) {}
++
++    public void oemSimOnOffNoti(int indicationType, int mode) {}
++
++    public void oemReleaseCompleteMessageInd(int indicationType,
++            vendor.samsung.hardware.radio.V1_2.OemSSReleaseComplete result) {}
++
++    public void oemSapNoti(int indicationType, ArrayList<Byte> data) {}
++
++    public void oemNrBearerAllocationChangeInd(int indicationType, int status) {}
++
++    public void oem5gStatusChangeInd(int indicationType, int status) {}
++
++    public void oemNrDcParamChangeInd(int indicationType,
++            vendor.samsung.hardware.radio.V1_2.DcParam dcParam) {}
++
++    public void oemNrSignalStrengthInd(int indicationType,
++            vendor.samsung.hardware.radio.V1_2.NrSignalStrength nrSignalStrength) {}
++
++    public vendor.samsung.hardware.radio.V1_2.ApnProfile oemLoadApnProfile(String select) {
++        return new vendor.samsung.hardware.radio.V1_2.ApnProfile();
++    }
++
++    public int oemGetSettingValue(String key, String table) {
++        return 0;
++    }
++
+     private CommandsInterface.RadioState getRadioStateFromInt(int stateInt) {
+         CommandsInterface.RadioState state;
+ 
+diff --git a/src/java/com/android/internal/telephony/RadioResponse.java b/src/java/com/android/internal/telephony/RadioResponse.java
+index 119fb9184..3e2b3b0a5 100644
+--- a/src/java/com/android/internal/telephony/RadioResponse.java
++++ b/src/java/com/android/internal/telephony/RadioResponse.java
+@@ -33,7 +33,6 @@ import android.hardware.radio.V1_0.RadioResponseInfo;
+ import android.hardware.radio.V1_0.SendSmsResult;
+ import android.hardware.radio.V1_0.SetupDataCallResult;
+ import android.hardware.radio.V1_0.VoiceRegStateResult;
+-import android.hardware.radio.V1_2.IRadioResponse;
+ import android.os.AsyncResult;
+ import android.os.Message;
+ import android.os.SystemClock;
+@@ -58,7 +57,7 @@ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
+ 
+-public class RadioResponse extends IRadioResponse.Stub {
++public class RadioResponse extends vendor.samsung.hardware.radio.V1_2.IRadioResponse.Stub {
+     // The number of the required config values for broadcast SMS stored in the C struct
+     // RIL_CDMA_BroadcastServiceInfo
+     private static final int CDMA_BSI_NO_OF_INTS_STRUCT = 3;
+@@ -1364,6 +1363,290 @@ public class RadioResponse extends IRadioResponse.Stub {
+         }
+     }
+ 
++    public void secGetIccCardStatusReponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecCardStatus cardStatus) {
++        // The standard 1.2 SIM-status path is already functional on dream2lte.
++        // Keep the Samsung-specific variant conservative until it proves necessary.
++        responseVoid(responseInfo);
++    }
++
++    public void secSupplyNetworkDepersonalizationResponse(RadioResponseInfo responseInfo,
++            int remainingRetries) {
++        responseInts(responseInfo, remainingRetries);
++    }
++
++    public void secAcceptCallResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secDialResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secGetCurrentCallsResponse(RadioResponseInfo responseInfo,
++            ArrayList<vendor.samsung.hardware.radio.V1_2.SecCall> calls) {
++        ArrayList<android.hardware.radio.V1_2.Call> baseCalls = new ArrayList<>(calls.size());
++        for (vendor.samsung.hardware.radio.V1_2.SecCall call : calls) {
++            baseCalls.add(call.base);
++        }
++        responseCurrentCalls_1_2(responseInfo, baseCalls);
++    }
++
++    public void secGetSignalStrengthResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecSignalStrength sigStrength) {
++        responseSignalStrength_1_2(responseInfo, sigStrength.base);
++    }
++
++    public void secGetVoiceRegistrationStateResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecVoiceRegStateResult voiceRegResponse) {
++        getVoiceRegistrationStateResponse_1_2(responseInfo, voiceRegResponse.base);
++    }
++
++    public void secGetDataRegistrationStateResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecDataRegStateResult dataRegResponse) {
++        getDataRegistrationStateResponse_1_2(responseInfo, dataRegResponse.base);
++    }
++
++    public void secExplicitCallTransferResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secGetOperatorRespnse(RadioResponseInfo responseInfo, String longName,
++            String shortName, String plmn, String epdgname) {
++        responseStrings(responseInfo, longName, shortName, plmn);
++    }
++
++    public void oemSetBarringPasswordResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secgetImsRegistrationStateReponse(RadioResponseInfo responseInfo,
++            ArrayList<Integer> regState) {
++        responseIntArrayList(responseInfo, regState);
++    }
++
++    public void secGetAvailableNetworkResponse(RadioResponseInfo responseInfo,
++            ArrayList<vendor.samsung.hardware.radio.V1_2.SecOperatorInfo> networkInfo) {
++        ArrayList<android.hardware.radio.V1_0.OperatorInfo> baseInfos =
++                new ArrayList<>(networkInfo.size());
++        for (vendor.samsung.hardware.radio.V1_2.SecOperatorInfo info : networkInfo) {
++            baseInfos.add(info.base);
++        }
++        responseOperatorInfos(responseInfo, baseInfos);
++    }
++
++    public void oemDialEmergencyCallResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemCallDeflectionResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemModifyCallInitiateResponse(RadioResponseInfo responseInfo,
++            LastCallFailCauseInfo failCauseInfo) {
++        responseLastCallFailCauseInfo(responseInfo, failCauseInfo);
++    }
++
++    public void oemSetImsCallListResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetPreferredNetworkListResponse(RadioResponseInfo responseInfo,
++            ArrayList<vendor.samsung.hardware.radio.V1_2.OemPreferredNetworkInfo> infos) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemSetPreferredNetworkListResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemSendEncodedUSSDResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemHoldCallResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetDisable2gResponse(RadioResponseInfo responseInfo, int isDisable) {
++        responseInts(responseInfo, isDisable);
++    }
++
++    public void oemSetDisable2gResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oenGetAcbInfoResponse(RadioResponseInfo responseInfo,
++            ArrayList<Integer> acbInfo) {
++        responseIntArrayList(responseInfo, acbInfo);
++    }
++
++    public void oemSetTransferCallResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetICBarringResponse(RadioResponseInfo responseInfo, String numberDateList) {
++        responseString(responseInfo, numberDateList);
++    }
++
++    public void oemSetICBarringResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemQueryCnapResponse(RadioResponseInfo responseInfo, int queryCNAP) {
++        responseInts(responseInfo, queryCNAP);
++    }
++
++    public void oemRefreshNitzTimeResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemEnableUnsolResponseResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemCancelTransferCallResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemAcknowledgeRilConnectedResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetPhoneBookStorageInfoResponse(RadioResponseInfo responseInfo,
++            ArrayList<Integer> phoneBookInfo) {
++        responseIntArrayList(responseInfo, phoneBookInfo);
++    }
++
++    public void oemUsimPbCapaResponse(RadioResponseInfo responseInfo,
++            ArrayList<Integer> usimPbCapa) {
++        responseIntArrayList(responseInfo, usimPbCapa);
++    }
++
++    public void oemSetSimPowerResponse(RadioResponseInfo responseInfo, int power) {
++        responseInts(responseInfo, power);
++    }
++
++    public void oemSetSimOnOffResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemSetSimInitEventResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetSimLockInfoResponse(RadioResponseInfo responseInfo,
++            ArrayList<Integer> simLockInfO) {
++        responseIntArrayList(responseInfo, simLockInfO);
++    }
++
++    public void oemSupplyIccPersoResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemChangeIccPersoResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetPhoneBookEntryResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.OemSimPBResponse simPBResponseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemAccessPhoneBookEntryResponse(RadioResponseInfo responseInfo,
++            int simPbAccessResp) {
++        responseInts(responseInfo, simPbAccessResp);
++    }
++
++    public void oemGetCellBroadcastConfigResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.OemCbConfigArgs configs) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemEmergencySearchResponse(RadioResponseInfo responseInfo,
++            int respEmergencySearch) {
++        responseInts(responseInfo, respEmergencySearch);
++    }
++
++    public void oemEmergencyControlResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemGetAtrResponse(RadioResponseInfo responseInfo, String atr) {
++        responseString(responseInfo, atr);
++    }
++
++    public void oemSendCdmaSmsExpectMoreResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecSendSmsResult sms) {
++        responseSms(responseInfo, convertSecSendSmsResult(sms));
++    }
++
++    public void secSendSmsResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecSendSmsResult sms) {
++        responseSms(responseInfo, convertSecSendSmsResult(sms));
++    }
++
++    public void secSendSMSExpectMoreResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecSendSmsResult sms) {
++        responseSms(responseInfo, convertSecSendSmsResult(sms));
++    }
++
++    public void secSendCdmaSmsResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecSendSmsResult sms) {
++        responseSms(responseInfo, convertSecSendSmsResult(sms));
++    }
++
++    public void secSendImsSmsResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.SecSendSmsResult sms) {
++        responseSms(responseInfo, convertSecSendSmsResult(sms));
++    }
++
++    public void secSetDataAllowedResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secGetCdmaRoamingPreferenceResponse(RadioResponseInfo responseInfo,
++            int n, int m) {
++        responseInts(responseInfo, n, m);
++    }
++
++    public void secEnable5gResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secDisable5gResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secQuery5gStatusResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
++    public void secQueryNrDcParamResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.DcParam endcDcnr) {
++        responseVoid(responseInfo);
++    }
++
++    public void secQueryNrBearerAllocationResponse(RadioResponseInfo responseInfo,
++            int bearerStatus) {
++        responseInts(responseInfo, bearerStatus);
++    }
++
++    public void secQueryNrSignalStrengthResponse(RadioResponseInfo responseInfo,
++            vendor.samsung.hardware.radio.V1_2.NrSignalStrength nrSignalStrength) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemQueryCsgListResponse(RadioResponseInfo responseInfo,
++            ArrayList<vendor.samsung.hardware.radio.V1_2.OemCsgInfo> csgInfos) {
++        responseVoid(responseInfo);
++    }
++
++    public void oemSelectCsgManualResponse(RadioResponseInfo responseInfo) {
++        responseVoid(responseInfo);
++    }
++
+     private int convertHalKeepaliveStatusCode(int halCode) {
+         switch (halCode) {
+             case android.hardware.radio.V1_1.KeepaliveStatusCode.ACTIVE:
+@@ -2088,4 +2371,13 @@ public class RadioResponse extends IRadioResponse.Stub {
+             mRil.processResponseDone(rr, responseInfo, ret);
+         }
+     }
++
++    private SendSmsResult convertSecSendSmsResult(
++            vendor.samsung.hardware.radio.V1_2.SecSendSmsResult sms) {
++        SendSmsResult result = new SendSmsResult();
++        result.messageRef = sms.messageReg;
++        result.ackPDU = sms.ackPDU;
++        result.errorCode = sms.errorCode;
++        return result;
++    }
+ }
+-- 
+2.53.0
