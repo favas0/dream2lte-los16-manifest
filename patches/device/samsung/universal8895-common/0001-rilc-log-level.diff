@@ -1,0 +1,12 @@
+diff --git a/system_prop.mk b/system_prop.mk
+index fff3a81..2929b02 100644
+--- a/system_prop.mk
++++ b/system_prop.mk
+@@ -33,6 +33,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
+     ro.carrier=unknown \
+     vendor.sec.rild.libpath=/vendor/lib64/libsec-ril.so \
+     vendor.sec.rild.libpath2=/vendor/lib64/libsec-ril-dsds.so \
++    persist.log.tag.RILC=F \
+     ro.dalvik.vm.native.bridge=0 \
+     security.ASKS.policy_version=000000 \
+     security.mdf.result=None \
