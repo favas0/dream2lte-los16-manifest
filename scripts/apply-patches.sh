@@ -32,5 +32,7 @@ apply_diff "vendor/samsung/universal8895-common" \
   "patches/vendor/samsung/universal8895-common/0001-keep-stock-ril-packaging.diff"
 apply_diff "device/samsung/universal8895-common" \
   "patches/device/samsung/universal8895-common/0001-rilc-log-level.diff"
+am_patch "kernel/samsung/universal8895" \
+  "patches/kernel/samsung/universal8895/0001-arm64-configs-enable-core-Halium-LXC-support.patch"
 
 echo "All local patches applied."
