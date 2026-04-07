@@ -1,0 +1,45 @@
+From 1a940b5e6f433f973d11cf4135f91060c35a1835 Mon Sep 17 00:00:00 2001
+From: favas0 <3156229+favas0@users.noreply.github.com>
+Date: Tue, 7 Apr 2026 22:05:39 +0100
+Subject: [PATCH] scripts: dtc: fix yylloc host build clash
+
+Change-Id: I2ebc8e14077027c74d645f302727c813cd955f83
+---
+ scripts/dtc/dtc-lexer.l             | 2 +-
+ scripts/dtc/dtc-lexer.lex.c_shipped | 3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/dtc/dtc-lexer.l b/scripts/dtc/dtc-lexer.l
+index 0ee1caf03dd0..336c93ca38a8 100644
+--- a/scripts/dtc/dtc-lexer.l
++++ b/scripts/dtc/dtc-lexer.l
+@@ -38,7 +38,7 @@ LINECOMMENT	"//".*\n
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ extern bool treesource_error;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+diff --git a/scripts/dtc/dtc-lexer.lex.c_shipped b/scripts/dtc/dtc-lexer.lex.c_shipped
+index 11cd78e72305..efe888429328 100644
+--- a/scripts/dtc/dtc-lexer.lex.c_shipped
++++ b/scripts/dtc/dtc-lexer.lex.c_shipped
+@@ -637,7 +637,7 @@ char *yytext;
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ extern bool treesource_error;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+@@ -2232,4 +2232,3 @@ static void lexical_error(const char *fmt, ...)
+ 
+ 	treesource_error = true;
+ }
+-
+-- 
+2.53.0
+
