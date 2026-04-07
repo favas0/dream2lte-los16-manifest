@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="github" fetch="https://github.com"/>
+  <default remote="github" revision="refs/heads/main" sync-j="4" sync-c="true"/>
+  <project name="favas0/dream2lte-los16-manifest" path="manifest-support" revision="refs/heads/main"/>
+</manifest>

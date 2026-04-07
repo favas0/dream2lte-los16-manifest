@@ -2,11 +2,11 @@
 
 This repository is a reproducible meta-source for the working LineageOS 16 `dream2lte` tree.
 
-It is meant to be used as the manifest source for `repo init`, then synced into the workspace as `manifest-support/` so the local patches and Docker build tooling are available in-tree.
+It is meant to be used as the manifest source for `repo init`, then synced into the workspace as `manifest-support/` so the pinned manifest snapshot, local patches, and Docker build tooling are available in-tree.
 
 ## What It Captures
 
-- Pinned `repo` manifest for the working LOS16 source state
+- Bootstrap manifest plus compressed pinned `repo` manifest snapshot for the working LOS16 source state
 - Samsung signal-bars fix in framework telephony
 - ClearKey DRM build fix
 - Docker build environment used for the successful full ROM build
@@ -23,10 +23,12 @@ It is meant to be used as the manifest source for `repo init`, then synced into 
 mkdir -p ~/android/dream2lte-los16
 cd ~/android/dream2lte-los16
 repo init -u https://github.com/favas0/dream2lte-los16-manifest.git -b main
+repo sync -c --no-clone-bundle --no-tags -j1
+bash manifest-support/scripts/bootstrap-workspace.sh
 repo sync -c --no-clone-bundle --no-tags -j"$(nproc)"
-./manifest-support/scripts/apply-patches.sh
+bash manifest-support/scripts/apply-patches.sh
 docker build -t lineage16-buildenv:latest -f manifest-support/docker/Dockerfile manifest-support/docker
-./manifest-support/scripts/build-docker.sh
+bash manifest-support/scripts/build-docker.sh
 ```
 
 ## Patch Contents
@@ -40,5 +42,6 @@ docker build -t lineage16-buildenv:latest -f manifest-support/docker/Dockerfile 
 ## Notes
 
 - This repo intentionally does not ship `.repo`, build outputs, or host-only symlink hacks.
+- The root `default.xml` is a bootstrap manifest. `scripts/bootstrap-workspace.sh` expands the pinned compressed snapshot into `.repo/manifests/default.xml` before the real source sync.
 - The remaining Samsung `secbridge` noise is treated as non-fatal. The functional radio fix is the telephony callback bridge.
 - The host build experiments created extra compatibility changes; the Docker path is the preferred build path.
