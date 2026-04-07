@@ -1,0 +1,25 @@
+From 55c07bcf6915c6128ba0828f04b68479af929dcf Mon Sep 17 00:00:00 2001
+From: favas <favas@local>
+Date: Tue, 7 Apr 2026 12:22:43 +0100
+Subject: [PATCH] clearkey: drop stale file-handle members
+
+Change-Id: Ica18a5151569f7c34578f626721a10baeeeabfb2
+---
+ drm/mediadrm/plugins/clearkey/hidl/include/DrmPlugin.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drm/mediadrm/plugins/clearkey/hidl/include/DrmPlugin.h b/drm/mediadrm/plugins/clearkey/hidl/include/DrmPlugin.h
+index 5360623ae..b84e93c94 100644
+--- a/drm/mediadrm/plugins/clearkey/hidl/include/DrmPlugin.h
++++ b/drm/mediadrm/plugins/clearkey/hidl/include/DrmPlugin.h
+@@ -333,8 +333,6 @@ private:
+     uint32_t mNextSecureStopId;
+     android::Mutex mPlayPolicyLock;
+ 
+-    DeviceFiles mFileHandle GUARDED_BY(mFileHandleLock);
+-    Mutex mFileHandleLock;
+     Mutex mSecureStopLock;
+     Mutex mSecurityLevelLock;
+ 
+-- 
+2.53.0
