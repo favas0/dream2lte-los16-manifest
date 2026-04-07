@@ -31,6 +31,8 @@ docker build -t lineage16-buildenv:latest -f manifest-support/docker/Dockerfile 
 bash manifest-support/scripts/build-docker.sh
 ```
 
+`manifest-support/scripts/build-docker.sh` defaults to `JOBS=20`. Override `JOBS` explicitly only when you want a different parallelism level.
+
 ## Patch Contents
 
 - `frameworks/opt/telephony`: Samsung vendor radio callback bridge that restores signal bars

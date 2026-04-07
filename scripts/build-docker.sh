@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SUPPORT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_ROOT="${1:-$(cd "${SUPPORT_ROOT}/.." && pwd)}"
-JOBS="${JOBS:-$(nproc)}"
+JOBS="${JOBS:-20}"
 TARGET="${TARGET:-lineage_dream2lte-userdebug}"
 OUT_DIR_REL="${OUT_DIR_REL:-out-docker}"
 IMAGE="${IMAGE:-lineage16-buildenv:latest}"

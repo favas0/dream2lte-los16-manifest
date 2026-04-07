@@ -35,6 +35,7 @@ Important background:
 - The working source state is represented by the manifest repo and patch set, not by random local workspace edits.
 - Do not reintroduce the failed `librilutils` / `libreference-ril` swap experiment.
 - The remaining Samsung `secbridge` noise is considered non-fatal for now.
+- When building, use 20 cores.
 
 Known-good LOS16 build:
 - lineage-16.0-20260407-UNOFFICIAL-dream2lte.zip
@@ -131,6 +132,7 @@ Do not assume every desktop-LXC option is required for the first boot. Prefer th
 - Do not revert to the failed radio-library swap experiment.
 - Treat `main` in the manifest repo as the stable LOS16 source baseline.
 - Keep Halium work isolated on new branches.
+- When building in Docker or manually, use 20 cores (`JOBS=20`, `m -j20`).
 
 ## Success Criteria For The First Halium Pass
 
